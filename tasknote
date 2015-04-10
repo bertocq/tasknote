@@ -37,31 +37,48 @@
 # 	- View Note Feature
 #	- Allow relative path for FOLDER
 
-EDITOR=vim
+# Updated Apr 2015 by Alexander Czar - https://github.com/AlexCzar
+#   - Upgraded backticks use to more safe and modern $() construct
+#   - EDITOR, VIEWER, notes directory (FOLDER) and note file extension (EXT)
+#     are now configurable via environment variables:
+#       * TASKNOTE_EDITOR: default - 'vim'
+#       * TASKNOTE_VIEWER: default - 'cat'
+#       * TASKNOTE_FOLDER: default - '~/.task/notes', changed from Dropbox as per
+#         [3rd party app Guidelines](http://taskwarrior.org/docs/3rd-party.html)
+#       * TASKNOTE_FILE_EXT: default - '.txt'
+#   - Added option to delete notes via 'tasknote ## d' where ## is the task number
+#   - Spaces or other 'special' characters can now be used in the name of notes directory.
+#   - Other minor updates and tweaks.
+
+
+EDITOR=${TASKNOTE_EDITOR:-vim}
 TASKBIN=task
-VIEWER=cat
+VIEWER=${TASKNOTE_VIEWER:-cat}
+
+SELECT_WRONG_OPTION_MESSAGE="Please type the option number not name."
 
 # FOLDER to store notes in. Must already exist.
 # If you sync tasks, FOLDER should be a location that syncs and is available to
 # other computers, i.e. ~/dropbox/tasknotes
-FOLDER=~/Dropbox/tasks/notes/
+FOLDER=${TASKNOTE_FOLDER:-~/.task/notes}
 
 # Check for existence of $FOLDER
 if [ ! -d "$FOLDER" ]; then
-	echo    "Notes folder '$FOLDER' does not exist."
-	echo -n "Shall I create it (y/n)? "
-	read answer
-	if [ $answer == "y" ]; then
-	  echo "Creating '$FOLDER'."
-	  mkdir -p "$FOLDER";
-	else
-	  echo "Did NOT create $FOLDER. Exiting."
-	  exit 1;
-	fi
+	echo -e "Notes folder '$FOLDER' does not exist. \nDo you want to create it?"
+	select yn in "Yes" "No"; do
+		case $yn in
+			Yes ) echo "Creating '$FOLDER'."
+					mkdir -p "$FOLDER"
+					break;;
+			No ) echo "Did NOT create $FOLDER. Exiting."
+					exit 1;;
+			* ) echo "$SELECT_WRONG_OPTION_MESSAGE";;
+		esac
+	done
 fi
 
 # Preferred extension for tasknotes
-EXT=".txt"
+EXT=${TASKNOTE_FILE_EXT:-.txt}
 
 # Message that gets annotated to the task to indicate that notes exist
 NOTEMSG="See Notes File"
@@ -69,17 +86,18 @@ NOTEMSG="See Notes File"
 # Display usage if task number not supplied on cli
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	echo "Usage:"
-   	echo "  New/Edit note: $0 <id>"
+   	echo "  Add/Edit note: $0 <id>"
 	echo "  View note:     $0 <id> v"
+	echo "  Delete note:   $0 <id> d"
 	exit 1
 fi
 
 #find UUID from given task
-uuid=`$TASKBIN $1 uuids`
+uuid=$($TASKBIN $1 uuids)
 
 # build full path & file name to store notes in
 folder=`echo "$FOLDER" | sed "s|^~|$HOME|"`
-file="$folder$uuid$EXT"
+file="$folder/$uuid$EXT"
 
 # determine if notes file already exists
 fileexists=0
@@ -88,28 +106,41 @@ if [ -f "$file" ]; then
 fi
 
 # Display note if requested and exit
+# Display note if requested and exit
 if [ $# -gt 1 ]; then
-	if [ $fileexists = 1 ]; then
-		$VIEWER "$file"
-		exit 0
-	else
-		echo "Note does not exist"
-		exit 1
-	fi
+    if [ $fileexists = 1 ]; then
+        if [ 'd' = $2 ]; then
+			echo "Are you sure you want to delete annotation for task $1?"
+			select yn in "Yes" "No"; do
+				case $yn in
+					Yes ) rm -f "$file" && $SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
+							exit 0;;
+					No ) exit 0;;
+					* ) echo $SELECT_WRONG_OPTION_MESSAGE;;
+				esac
+			done
+            echo "no such file!"
+            exit 1
+        fi
+        $VIEWER "$file"
+        exit 0
+    else
+        echo "File not found"
+        exit 1
+    fi
 fi
-
 #create/edit $file with editor
 $SHELL -c "$EDITOR '$file'"
 
 # Create a note message representing the first line of
 # the edited note file.
 if [ -f "$file" ]; then
-  NOTEMSG="[tasknote] `head -1 \"$file\"`"
-  # remove any previous annotation - we want only a single
-  # tasknote annotation. Detection works through the
-  # [tasknote] annotation prefix
-  $SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
-  $SHELL -c "$TASKBIN $* annotate '$NOTEMSG'"
+	NOTEMSG="[note] $(head -1 "$file")"
+	# remove any previous annotation - we want only a single
+	# tasknote annotation. Detection works through the
+	# [note] annotation prefix
+	$SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
+	$SHELL -c "$TASKBIN $* annotate '$NOTEMSG'"
 fi
 
 exit 0

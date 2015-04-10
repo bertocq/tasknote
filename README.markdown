@@ -8,7 +8,19 @@ History
 * Original implementation: Alan Bowen
 * Update to taskwarrior 2.0: Michael Bobroski
 * Context-aware annotations: Bjoern Doebel
-* Spaces or other 'special' characters can now be used in the name of notes directory: @AlexCzar
+
+Updates by @AlexCzar
+====================
+* Spaces or other 'special' characters can now be used in the name of notes directory
+* Upgraded backticks use to more safe and modern $() construct
+* EDITOR, VIEWER, notes directory (FOLDER) and note file extension (EXT)
+are now configurable via environment variables:
+  * `TASKNOTE_EDITOR`: default - 'vim'
+  * `TASKNOTE_VIEWER`: default - 'cat'
+  * `TASKNOTE_FOLDER`: default - '~/.task/notes', changed from Dropbox as per
+    [3rd party app Guidelines](http://taskwarrior.org/docs/3rd-party.html)
+  * `TASKNOTE_FILE_EXT`: default - '.txt'
+* Added option to deannotate task
 
 Usage
 -----
@@ -21,14 +33,19 @@ Usage
 	
 `tasknote <task_id> v`
 
-Actually, you can type anything after <task_id> that comes to mind: v, view, show, list, cat etc. I left it open since no other features are planned.
+Actually, you can type anything after <task_id> that comes to mind (except 'd'), but beware—this behavior may change in the future, so it is recommended to use 'v' or 'view'.
+
+**Delete Note:**
+`tasknote <task_id> d`
 
 Note: This behaviour might change soon (d[elete] will be implemented in addition to v[iew])
 
 Configuration
 -------------
-Save in a place like /usr/bin and flag as executable with sudo chmod a+x /usr/bin/tasknote.
+Save in a place like /usr/local/bin and flag as executable with sudo chmod a+x /usr/local/bin/tasknote.
 
-Be sure to edit the FOLDER var in the script. If it does not exist, you will be asked if you want to create it during the first run.
-
-You can also configure the EDITOR (default: vim), VIEWER (default: cat), as well as NOTEMSG, the annotation message appended to the task in taskwarrior.
+You do not have to configure anything as defaults should work on most systems. If you want to change something, you can specify environment variables either inline (using `env`) or in your profile or shell config files, please note that editing this file itself is not recommended, if you need additional configuration please [create an issue](https://github.com/AlexCzar/tasknote/issues/new). Here are your options:
+  * `TASKNOTE_EDITOR`: default - 'vim'
+  * `TASKNOTE_VIEWER`: default - 'cat'
+  * `TASKNOTE_FOLDER`: default - '~/.task/notes'
+  * `TASKNOTE_FILE_EXT`: default - '.txt'
