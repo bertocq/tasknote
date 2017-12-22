@@ -100,29 +100,25 @@ if [ -f "$file" ]; then
   fileexists=1
 fi
 
-# Display note if requested and exit
+# Display/remove note if requested and exit
 if [ $# -gt 1 ]; then
   if [ $fileexists = 1 ]; then
-    if [ 'd' = $2 ]; then
-      echo "Are you sure you want to delete annotation for task $1?"
-      select yn in "Yes" "No"; do
-        case $yn in
-          Yes ) rm -f "$file" && $SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
-                exit 0;;
-          No ) exit 0;;
-          * ) echo $SELECT_WRONG_OPTION_MESSAGE;;
-        esac
-      done
-      echo "no such file!"
-      exit 1
-    fi
-    $VIEWER "$file"
-    exit 0
+      action=$2
+      case $action in
+          v)
+              $SHELL -c "$VIEWER '$file'"
+              ;;
+          d)
+              $SHELL -c "rm $file"
+              $SHELL -c "$TASKBIN $1 denotate \"[tasknote]\""
+              ;;
+      esac
   else
     echo "File not found"
-    exit 1
   fi
+  exit 1
 fi
+
 # Create/edit $file with editor
 $SHELL -c "$EDITOR '$file'"
 
