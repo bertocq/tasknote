@@ -56,12 +56,16 @@ SELECT_WRONG_OPTION_MESSAGE="Please type the option number not name."
 
 EDITOR=${TASKNOTE_EDITOR:-vim}
 VIEWER=${TASKNOTE_VIEWER:-cat}
-EXT=${TASKNOTE_FILE_EXT:-.txt}
+EXT=${TASKNOTE_FILE_EXT:-txt}
 TASKBIN=task
-# FOLDER to store notes in. Must already exist.
+# FOLDER to store notes in.
 # If you sync tasks, FOLDER should be a location that syncs and is available to
 # other computers, i.e. ~/dropbox/tasknotes
-FOLDER=${TASKNOTE_FOLDER:-~/.task/notes}
+# by default, store them in the task data location feel free to change it
+TASK_FOLDER="$( task _show | grep data\.location | cut -d '=' -f2 )"
+FOLDER=${TASKNOTE_FOLDER:-$TASK_FOLDER/notes}
+# substitude ~ if data.location use it
+FOLDER="${FOLDER/#~/$HOME}"
 
 # Check for existence of $FOLDER
 if [ ! -d "$FOLDER" ]; then
@@ -93,7 +97,7 @@ uuid=$($TASKBIN $1 uuids)
 # Build full path & file name to store notes in
 FOLDER=`echo "$FOLDER" | sed "s|^~|$HOME|"`
 [ "${FOLDER: -1}" != "/" ] && FOLDER=$FOLDER/ # ensure FOLDER ends with a slash
-file="$FOLDER$uuid$EXT"
+file="$FOLDER$uuid.$EXT"
 
 # Determine if notes file already exists
 fileexists=0

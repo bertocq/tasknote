@@ -30,7 +30,7 @@ Usage
 `tasknote <task_id>`
 
 **View Note:**
-	
+
 `tasknote <task_id> v`
 
 Actually, you can type anything after <task_id> that comes to mind (except 'd'), but beware—this behavior may change in the future, so it is recommended to use 'v' or 'view'.
@@ -42,7 +42,11 @@ Note: This behaviour might change soon (d[elete] will be implemented in addition
 
 Configuration
 -------------
-Save in a place like /usr/local/bin and flag as executable with sudo chmod a+x /usr/local/bin/tasknote.
+Save in a place like /usr/bin and flag as executable with sudo chmod a+x /usr/bin/tasknote.
+
+You can adjust the FOLDER variable (tasknotes location) in the script. If the path does not exist, you will be asked if you want to create it during the first run.
+
+You can also configure the EDITOR (default: vim), VIEWER (default: cat), as well as NOTEMSG, the annotation message appended to the task in taskwarrior.
 
 You do not have to configure anything as defaults should work on most systems. If you want to change something, you can specify environment variables either inline (using `env`) or in your profile or shell config files, please note that editing this file itself is not recommended, if you need additional configuration please [create an issue](https://github.com/AlexCzar/tasknote/issues/new). Here are your options:
   * `TASKNOTE_EDITOR`: default - 'vim'
