@@ -50,13 +50,14 @@
 #   - Spaces or other 'special' characters can now be used in the name of notes directory.
 #   - Other minor updates and tweaks.
 
-
-EDITOR=${TASKNOTE_EDITOR:-vim}
-TASKBIN=task
-VIEWER=${TASKNOTE_VIEWER:-cat}
-
+# Message that gets annotated to the task to indicate that notes exist
+NOTEMSG="See Notes File"
 SELECT_WRONG_OPTION_MESSAGE="Please type the option number not name."
 
+EDITOR=${TASKNOTE_EDITOR:-vim}
+VIEWER=${TASKNOTE_VIEWER:-cat}
+EXT=${TASKNOTE_FILE_EXT:-.txt}
+TASKBIN=task
 # FOLDER to store notes in. Must already exist.
 # If you sync tasks, FOLDER should be a location that syncs and is available to
 # other computers, i.e. ~/dropbox/tasknotes
@@ -77,59 +78,52 @@ if [ ! -d "$FOLDER" ]; then
 	done
 fi
 
-# Preferred extension for tasknotes
-EXT=${TASKNOTE_FILE_EXT:-.txt}
-
-# Message that gets annotated to the task to indicate that notes exist
-NOTEMSG="See Notes File"
-
 # Display usage if task number not supplied on cli
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	echo "Usage:"
-   	echo "  Add/Edit note: $0 <id>"
+  echo "  Add/Edit note: $0 <id>"
 	echo "  View note:     $0 <id> v"
 	echo "  Delete note:   $0 <id> d"
 	exit 1
 fi
 
-#find UUID from given task
+# Find UUID from given task
 uuid=$($TASKBIN $1 uuids)
 
 # build full path & file name to store notes in
 folder=`echo "$FOLDER" | sed "s|^~|$HOME|"`
 file="$folder/$uuid$EXT"
 
-# determine if notes file already exists
+# Determine if notes file already exists
 fileexists=0
 if [ -f "$file" ]; then
   fileexists=1
 fi
 
 # Display note if requested and exit
-# Display note if requested and exit
 if [ $# -gt 1 ]; then
-    if [ $fileexists = 1 ]; then
-        if [ 'd' = $2 ]; then
-			echo "Are you sure you want to delete annotation for task $1?"
-			select yn in "Yes" "No"; do
-				case $yn in
-					Yes ) rm -f "$file" && $SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
-							exit 0;;
-					No ) exit 0;;
-					* ) echo $SELECT_WRONG_OPTION_MESSAGE;;
-				esac
-			done
-            echo "no such file!"
-            exit 1
-        fi
-        $VIEWER "$file"
-        exit 0
-    else
-        echo "File not found"
-        exit 1
+  if [ $fileexists = 1 ]; then
+    if [ 'd' = $2 ]; then
+      echo "Are you sure you want to delete annotation for task $1?"
+      select yn in "Yes" "No"; do
+        case $yn in
+          Yes ) rm -f "$file" && $SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
+                exit 0;;
+          No ) exit 0;;
+          * ) echo $SELECT_WRONG_OPTION_MESSAGE;;
+        esac
+      done
+      echo "no such file!"
+      exit 1
     fi
+    $VIEWER "$file"
+    exit 0
+  else
+    echo "File not found"
+    exit 1
+  fi
 fi
-#create/edit $file with editor
+# Create/edit $file with editor
 $SHELL -c "$EDITOR '$file'"
 
 # Create a note message representing the first line of
