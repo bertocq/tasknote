@@ -2,7 +2,7 @@
 
 ###############################################################################
 # tasknote - associate note file with individual tasks in taskwarrior
-# 
+#
 # Copyright 2011, Alan Bowen, bowen@tcnj.edu.
 # All rights reserved.
 #
@@ -135,7 +135,7 @@ $SHELL -c "$EDITOR '$file'"
 # Create a note message representing the first line of
 # the edited note file.
 if [ -f "$file" ]; then
-	NOTEMSG="[note] $(head -1 "$file")"
+	NOTEMSG="[tasknote] $(head -1 "$file")"
 	# remove any previous annotation - we want only a single
 	# tasknote annotation. Detection works through the
 	# [note] annotation prefix
