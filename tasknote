@@ -93,6 +93,7 @@ fi
 
 # Find UUID from given task
 uuid=$($TASKBIN $1 uuids)
+description=`$TASKBIN _get $1.description`:
 
 # Build full path & file name to store notes in
 FOLDER=`echo "$FOLDER" | sed "s|^~|$HOME|"`
@@ -122,6 +123,20 @@ if [ $# -gt 1 ]; then
     echo "File not found"
   fi
   exit 1
+else
+  # Use first line of file to add the task description
+  if [ $fileexists = 1 ]; then
+    # Update if description has changed
+    firstline=$(head -1 $file)
+    if [ $firstline != $description ]; then
+      $SHELL -c "sed -i '' '1s/^.*$/$description/' $file"
+    fi
+  else
+    $SHELL -c "echo -e '$description' > $file"
+    # Add an underline using = below the description
+    dashes=${#description}
+    $SHELL -c "printf '=%.0s' {1..$dashes} >> $file"
+  fi
 fi
 
 # Create/edit $file with editor
