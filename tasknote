@@ -33,9 +33,9 @@
 ###############################################################################
 
 # Updated 2012, Michael Bobroski <bobroski@gmail.com>
-# 	- Updated to work with Taskwarrior 2.0
-# 	- View Note Feature
-#	- Allow relative path for FOLDER
+#   - Updated to work with Taskwarrior 2.0
+#   - View Note Feature
+# - Allow relative path for FOLDER
 
 # Updated Apr 2015 by Alexander Czar - https://github.com/AlexCzar
 #   - Upgraded backticks use to more safe and modern $() construct
@@ -69,17 +69,17 @@ FOLDER="${FOLDER/#~/$HOME}"
 
 # Check for existence of $FOLDER
 if [ ! -d "$FOLDER" ]; then
-	echo -e "Notes folder '$FOLDER' does not exist. \nDo you want to create it?"
-	select yn in "Yes" "No"; do
-		case $yn in
-			Yes ) echo "Creating '$FOLDER'."
-					mkdir -p "$FOLDER"
-					break;;
-			No ) echo "Did NOT create $FOLDER. Exiting."
-					exit 1;;
-			* ) echo "$SELECT_WRONG_OPTION_MESSAGE";;
-		esac
-	done
+  echo -e "Notes folder '$FOLDER' does not exist. \nDo you want to create it?"
+  select yn in "Yes" "No"; do
+    case $yn in
+      Yes ) echo "Creating '$FOLDER'."
+          mkdir -p "$FOLDER"
+          break;;
+      No ) echo "Did NOT create $FOLDER. Exiting."
+          exit 1;;
+      * ) echo "$SELECT_WRONG_OPTION_MESSAGE";;
+    esac
+  done
 fi
 
 # Display usage if task number not supplied on cli
@@ -108,16 +108,16 @@ fi
 # Display/remove note if requested and exit
 if [ $# -gt 1 ]; then
   if [ $fileexists = 1 ]; then
-      action=$2
-      case $action in
-          v|view)
-              $SHELL -c "$VIEWER \"$file\""
-              ;;
-          d|delete)
-              $SHELL -c "rm \"$file\""
-              $SHELL -c "$TASKBIN $1 denotate \"[tasknote]\""
-              ;;
-      esac
+    action=$2
+    case $action in
+      v|view)
+        $SHELL -c "$VIEWER \"$file\""
+        ;;
+      d|delete)
+        $SHELL -c "rm \"$file\""
+        $SHELL -c "$TASKBIN $1 denotate \"[tasknote]\""
+        ;;
+    esac
   else
     echo "File not found"
   fi
@@ -130,12 +130,12 @@ $SHELL -c "$EDITOR '$file'"
 # Create a note message representing the first line of
 # the edited note file.
 if [ -s "$file" ]; then
-	NOTEMSG="[tasknote] $(head -1 "$file" | sed -e "s,','\"'\"',g")"
-	# remove any previous annotation - we want only a single
-	# tasknote annotation. Detection works through the
-	# [note] annotation prefix
-	$SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
-	$SHELL -c "$TASKBIN $* annotate '$NOTEMSG'"
+  NOTEMSG="[tasknote] $(head -1 "$file" | sed -e "s,','\"'\"',g")"
+  # remove any previous annotation - we want only a single
+  # tasknote annotation. Detection works through the
+  # [note] annotation prefix
+  $SHELL -c "$TASKBIN $* denotate \"[tasknote]\""
+  $SHELL -c "$TASKBIN $* annotate '$NOTEMSG'"
 else
   [ -f "$file" ] && $SHELL -c "rm '$file'"
 fi
