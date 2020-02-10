@@ -93,7 +93,7 @@ fi
 
 # Find UUID from given task
 uuid=$($TASKBIN $1 uuids)
-description=`$TASKBIN _get $1.description`:
+description="$($TASKBIN _get $1.description | tr -d \'):"
 
 # Build full path & file name to store notes in
 FOLDER=`echo "$FOLDER" | sed "s|^~|$HOME|"`
